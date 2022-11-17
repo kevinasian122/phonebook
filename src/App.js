@@ -93,7 +93,7 @@ useEffect(hook, [])
   return (
     <div>
       <h2>Phonebook</h2>
-        <input value = {filter} 
+        <input value = {fiter} 
         onChange={handleFilterChange} />
       <h2>Add a new</h2>
         <Form addPerson={addPerson} newName={newName} handleNameChange={handleNameChange}
