@@ -4,7 +4,7 @@ import People from './Components/People'
 import axios from 'axios'
 import peopleService from './services/peoples'
 import peoples from './services/peoples'
-
+import './index.css'
 
 
 //states:
@@ -13,6 +13,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNum, setNewNum] = useState('')
   const [filter, setNewFilter] = useState ('')
+  const [notif, setNotif] = useState(null)
+  const [isError, setIsError] = useState(false)
 
 //data:
 
@@ -20,6 +22,14 @@ const hook = () => {
   peopleService.getAll()
   .then(initial => {
     setPersons(initial)
+  })
+  .catch(error => {
+    setIsError(true)
+    setNotif(error) 
+    setTimeout(() => {
+      setIsError(false)
+      setNotif(null)
+    }, 3000)
   })
 }
 useEffect(hook, [])
@@ -44,7 +54,25 @@ useEffect(hook, [])
   }
   }
 
+ //error
+ const Notification = ({message}) => {
+  if (message === null) {
+    return null
+  }
+  if(isError){
+    return(
+      <div className='error'>
+        {message}
+      </div>
+    )
+  }
 
+  return (
+    <div className='notification'>
+      {message}
+    </div>
+  )
+}
   
   const addPerson = (e) => {
     e.preventDefault();
@@ -62,11 +90,24 @@ useEffect(hook, [])
         id: duplicate.id,
       }
       peopleService.update(duplicate.id, newPerson) //updating backend then updating state with .map
+      .catch(error => {
+        setIsError(true)
+        setNotif(error) 
+        setTimeout(() => {
+          setIsError(false)
+          setNotif(null)
+        }, 3000)
+      })
       setPersons(persons.map(person => 
         person.id === duplicate.id ? newPerson : person
       ))
       setNewName('')
       setNewNum('')
+
+      setNotif(`Updated ${newPerson.name}`) //notification lasts for 3 secs 
+      setTimeout(() => {
+        setNotif(null)
+      }, 3000)
     }
     else{
       const newPerson = {
@@ -81,6 +122,10 @@ useEffect(hook, [])
         setNewName('')
         setNewNum('')
       })
+      setNotif(`Added ${newPerson.name}`) //notification lasts for 3 secs 
+      setTimeout(() => {
+        setNotif(null)
+      }, 3000)
     }
     
     
@@ -93,7 +138,8 @@ useEffect(hook, [])
   return (
     <div>
       <h2>Phonebook</h2>
-        <input value = {fiter} 
+        <Notification message={notif} />
+        <input value = {filter} 
         onChange={handleFilterChange} />
       <h2>Add a new</h2>
         <Form addPerson={addPerson} newName={newName} handleNameChange={handleNameChange}
